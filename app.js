@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-app.use('/uploads', express.static(path.join(__dirname, 'filestorage')));
+app.use('/storage', express.static(path.join(__dirname, 'filestorage')));
 
 app.get('/', (req, res) => {
   res.render('index')
@@ -44,7 +44,6 @@ app.delete('/delete/:fileName', (req, res) => {
   }
 });
 
-// New route to view the list of uploaded files
 app.get('/view', (req, res) => {
   const uploadDirectory = path.join(__dirname, 'filestorage');
   fs.readdir(uploadDirectory, (err, files) => {

@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Storage App</title>
-
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <title>Express File Storage</title>
 </head>
 <body>
     <div class="container">
-        <h1 class="mt-5 text-success">GeeksForGeeks File Storage</h1>
+        <h1 class="display-1 mt-5 text-success text-center">Express File Storage</h1>
 
         <h2 class="mt-4">Upload File</h2>
         <form action="/upload" method="POST" enctype="multipart/form-data">
@@ -21,22 +20,10 @@
             <button type="submit" class="btn btn-primary">Upload</button>
         </form>
 
-        <h2 class="mt-4">Delete File</h2>
-        <form id="deleteForm">
-            <div class="mb-3">
-                <select id="fileSelect" name="fileName" class="form-select">
-                </select>
-            </div>
-            <button type="button" class="btn btn-danger" onclick="deleteFile()">Delete</button>
-        </form>
-
-        <h2 class="mt-4">Uploaded Files</h2>
+        <h2 class="mt-4">File Storage</h2>
         <ul id="fileList" class="list-group">
         </ul>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.4/umd/popper.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.min.js"></script>
 
     <script>
         function populateFileListWithIcons() {
@@ -52,16 +39,27 @@
 
                         const fileExtension = fileName.split('.').pop();
 
+                        const listFileName = document.createElement('h7');
+                        listFileName.innerText = fileName;
+
                         const iconSpan = document.createElement('span');
                         iconSpan.className = 'me-3';
                         iconSpan.innerHTML = getFileIconHTML(fileExtension);
 
-                        const fileLink = document.createElement('a');
-                        fileLink.href = `/uploads/${fileName}`;
-                        fileLink.textContent = fileName;
+                        var deleteIcon = document.createElement('button');
+                        deleteIcon.className = 'btn btn-danger'
+                        deleteIcon.setAttribute('onclick',`deleteFile('${fileName}')`);
+                        deleteIcon.innerHTML = '<i class="bi bi-trash3"></i>';
+
+                        var fileLink = document.createElement('a');
+                        fileLink.className = 'btn btn-warning';
+                        fileLink.href = `/storage/${fileName}`;
+                        fileLink.innerHTML = '<i class="bi bi-eye"></i>';
 
                         listItem.appendChild(iconSpan);
+                        listItem.appendChild(listFileName);
                         listItem.appendChild(fileLink);
+                        listItem.appendChild(deleteIcon)
 
                         fileList.appendChild(listItem);
                     });
@@ -71,58 +69,36 @@
 
         function getFileIconHTML(fileExtension) {
             const iconClasses = {
-                pdf: 'far fa-file-pdf',
-                doc: 'far fa-file-word',
-                docx: 'far fa-file-word',
-                xls: 'far fa-file-excel',
-                xlsx: 'far fa-file-excel',
-                ppt: 'far fa-file-powerpoint',
-                pptx: 'far fa-file-powerpoint',
-                txt: 'far fa-file-alt',
-                jpg: 'far fa-file-image',
-                jpeg: 'far fa-file-image',
-                png: 'far fa-file-image',
-                gif: 'far fa-file-image',
-                default: 'far fa-file'
+                pdf: 'bi bi-filetype-pdf',
+                doc: 'bi bi-filetype-doc',
+                docx: 'bi bi-filetype-docx',
+                xls: 'bi bi-filetype-xls',
+                xlsx: 'bi bi-filetype-xlsx',
+                ppt: 'bi bi-filetype-ppt',
+                pptx: 'bi bi-filetype-pptx',
+                txt: 'bi bi-filetype-txt',
+                jpg: 'bi bi-filetype-jpg',
+                jpeg: 'bi bi-filetype-jpeg',
+                png: 'bi bi-filetype-png',
+                gif: 'bi bi-filetype-gif',
+                default: 'bi bi-file-earmark'
             };
 
             return `<i class="${iconClasses[fileExtension.toLowerCase()] || iconClasses['default']}"></i>`;
         }
 
-        function deleteFile() {
-            const deleteForm = document.getElementById('deleteForm');
-            const formData = new FormData(deleteForm);
-
-            fetch(`/delete/${formData.get('fileName')}`, {
-                method: 'DELETE',
-            })
-                .then(response => response.text())
-                .then(message => {
-                    alert(message);
-                    populateFileListWithIcons();
-                    populateDeleteOptions();
-                })
-                .catch(error => console.error(error));
-        }
-
-        function populateDeleteOptions() {
-            fetch('/view')
-                .then(response => response.json())
-                .then(data => {
-                    const fileSelect = document.getElementById('fileSelect');
-                    fileSelect.innerHTML = '';
-                    data.files.forEach(fileName => {
-                        const option = document.createElement('option');
-                        option.value = fileName;
-                        option.textContent = fileName;
-                        fileSelect.appendChild(option);
-                    });
-                })
-                .catch(error => console.error(error));
-        }
+        function deleteFile(fileName){
+        fetch(`/delete/${fileName}`,{
+            method : 'DELETE'
+        }).then(response=>response.text())
+        .then(response=>{
+            alert(response);
+            populateFileListWithIcons();
+        })
+    }
 
         populateFileListWithIcons();
-        populateDeleteOptions();
+        
     </script>
 </body>
 </html>
